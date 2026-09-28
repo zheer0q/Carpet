@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Plan room carpet cuts from a 4 metre-wide roll with minimal waste.">
+  <title>پلاندانەری بڕینی کومبار</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316262e'/%3E%3Cpath d='M7 9h18v14H7z' fill='%23e6a23c'/%3E%3Cpath d='M10 12h12v8H10z' fill='%2316262e'/%3E%3Cpath d='M12 14h8v4h-8z' fill='%23f6efe3'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #102a43;
+      --muted: #52677a;
+      --paper: #ffffff;
+      --panel: #ffffff;
+      --line: #cbd8e6;
+      --accent: #ff7474;
+      --accent-dark: #ed5c5c;
+      --navy: #6d9fff;
+      --green: #65d6a1;
+      --danger: #d94f5c;
+      --shadow: 0 10px 26px rgba(109, 159, 255, .12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    button, input, select { font: inherit; }
+    .numeric-input, .roll-badge, .stat b, .cut-num, .piece small, .chip, .cut-header > strong {
+      direction: ltr;
+      unicode-bidi: isolate;
+      font-family: Arial, sans-serif;
+      font-variant-numeric: lining-nums tabular-nums;
+      font-feature-settings: "locl" 0;
+    }
+    button { cursor: pointer; }
+    .shell { width: min(1440px, 100%); margin: 0 auto; padding: 28px; }
+    .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .brand > div:last-child { min-width: 0; }
+    .mark { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--navy); }
+    .mark svg { width: 26px; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.8rem, 3vw, 2.55rem); line-height: 1; letter-spacing: -.035em; }
+    .eyebrow { color: var(--accent); font-weight: 900; font-size: .77rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 7px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+    .lang-switch { display: flex; border: 2px solid var(--navy); border-radius: 10px; overflow: hidden; }
+    .lang-btn { border: 0; background: #fff; color: var(--navy); min-height: 38px; padding: 0 11px; font-weight: 900; }
+    .lang-btn.active { background: var(--navy); color: #fff; }
+    .roll-badge { background: var(--green); color: #fff; border-radius: 10px; padding: 9px 14px; font-weight: 850; white-space: nowrap; }
+    .grid { display: grid; grid-template-columns: minmax(310px, 420px) minmax(0, 1fr); gap: 22px; align-items: start; }
+    .grid > * { min-width: 0; }
+    .card { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+    .input-card { position: sticky; top: 18px; overflow: hidden; }
+    .card-head { padding: 22px 22px 17px; border-bottom: 1px solid var(--line); }
+    .card-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .card-head-row > div { min-width: 0; }
+    .input-toggle { display: none; flex: none; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); min-height: 38px; padding: 0 10px; font-weight: 850; }
+    .card-head h2 { font-size: 1.05rem; letter-spacing: -.01em; }
+    .hint { color: var(--muted); font-size: .88rem; margin-top: 4px; }
+    .roll-settings { padding: 15px 16px; border-bottom: 1px solid var(--line); background: #f8fbff; }
+    .setting-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .setting-field { display: grid; gap: 5px; color: var(--muted); font-size: .8rem; font-weight: 800; }
+    .setting-field input { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); padding: 0 11px; outline: none; }
+    .setting-field input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(109,159,255,.18); }
+    .mode-selector { border: 0; padding: 0; margin: 14px 0 0; }
+    .mode-selector legend { color: var(--muted); font-size: .8rem; font-weight: 850; margin-bottom: 7px; }
+    .mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-option { position: relative; display: block; cursor: pointer; }
+    .mode-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .mode-copy { display: block; min-height: 70px; border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 9px 10px; }
+    .mode-copy strong { display: block; color: var(--ink); font-size: .84rem; }
+    .mode-copy small { display: block; color: var(--muted); font-size: .72rem; line-height: 1.3; margin-top: 3px; }
+    .mode-option input:checked + .mode-copy { border-color: var(--navy); background: #edf4ff; box-shadow: inset 0 0 0 1px var(--navy); }
+    .room-list { padding: 12px 16px 4px; max-height: calc(100vh - 320px); min-height: 212px; overflow: auto; }
+    .room-row { display: grid; grid-template-columns: minmax(120px, 1fr) 66px 13px 66px 36px; grid-template-areas: "name name name name remove" "method sidea times sideb ." "options options options options options"; gap: 6px 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #e7eef6; }
+    .room-row input { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); padding: 0 11px; outline: none; }
+    .room-row .name { grid-area: name; }
+    .room-row .side-a { grid-area: sidea; }
+    .room-row .times { grid-area: times; }
+    .room-row .side-b { grid-area: sideb; }
+    .room-method { grid-area: method; width: 100%; min-width: 0; height: 42px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); padding: 0 7px; font-size: .78rem; font-weight: 800; outline: none; }
+    .room-method:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(109,159,255,.18); }
+    .room-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(214,122,45,.16); }
+    .times { text-align: center; color: var(--muted); font-weight: 800; }
+    .remove { grid-area: remove; width: 36px; height: 36px; border: 0; border-radius: 9px; color: var(--danger); background: transparent; display: grid; place-items: center; }
+    .remove:hover { background: #f7e6e1; }
+    .room-options { grid-area: options; border: 1px solid var(--line); border-radius: 10px; background: #f8fbff; overflow: hidden; }
+    .room-options summary { cursor: pointer; padding: 8px 10px; color: var(--navy); font-size: .78rem; font-weight: 900; list-style-position: inside; }
+    .room-options-grid { padding: 0 10px 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .option-field { display: grid; gap: 4px; color: var(--muted); font-size: .72rem; font-weight: 800; }
+    .option-field input, .option-field select { width: 100%; height: 38px; min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); padding: 0 8px; }
+    .check-field { display: flex; align-items: center; gap: 8px; min-height: 38px; color: var(--ink); font-size: .76rem; font-weight: 850; }
+    .check-field input { width: 18px; height: 18px; accent-color: var(--navy); }
+    .actions { padding: 14px 16px 17px; display: grid; grid-template-columns: 1fr 1.35fr; gap: 10px; }
+    .btn { min-height: 46px; border-radius: 12px; border: 1px solid var(--line); font-weight: 800; padding: 0 14px; }
+    .btn-secondary { background: #fff; color: var(--ink); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .error { display: none; margin: 0 16px 14px; color: var(--danger); background: #fbece8; border-radius: 10px; padding: 10px 12px; font-size: .88rem; }
+    .error.show { display: block; }
+    .results { display: grid; gap: 18px; }
+    .plan-compare { padding: 20px; }
+    .plan-compare > header { margin-bottom: 14px; }
+    .plan-grid { display: grid; grid-template-columns: repeat(4, minmax(145px, 1fr)); gap: 10px; }
+    .plan-choice { position: relative; text-align: start; border: 2px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); padding: 13px; min-height: 126px; }
+    .plan-choice:hover { border-color: var(--navy); }
+    .plan-choice.active { border-color: var(--navy); background: #edf4ff; box-shadow: inset 0 0 0 1px var(--navy); }
+    .plan-choice h3 { font-size: .9rem; padding-inline-end: 38px; }
+    .plan-choice strong { display: block; margin-top: 9px; font-family: Georgia, "Times New Roman", serif; font-size: 1.2rem; }
+    .plan-choice small { display: block; color: var(--muted); font-size: .72rem; margin-top: 3px; line-height: 1.35; }
+    .recommended { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; border-radius: 999px; background: var(--green); color: #fff; padding: 3px 7px; font-size: .62rem; font-weight: 900; }
+    .equal-options { padding: 18px 20px; border-color: var(--green); }
+    .equal-options-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+    .equal-options-head h2 { font-size: 1.02rem; }
+    .equal-count { flex: none; border-radius: 999px; background: var(--green); color: #fff; padding: 5px 9px; font-size: .72rem; font-weight: 900; }
+    .equal-option-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .equal-option { border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-height: 46px; padding: 7px 12px; text-align: start; font-weight: 900; }
+    .equal-option small { display: block; color: var(--muted); font-size: .68rem; font-weight: 750; }
+    .equal-option.active { border-color: var(--green); background: #eaf8f1; }
+    .summary { padding: 22px; }
+    .summary-top { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
+    .summary h2 { font-size: 1.2rem; }
+    .summary-line { color: var(--muted); margin-top: 4px; }
+    .waste-pill { background: var(--green); color: #fff; border-radius: 9px; padding: 7px 12px; font-weight: 850; font-size: .86rem; white-space: nowrap; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; }
+    .stat { background: #f3f7ff; border-left: 5px solid var(--navy); border-radius: 10px; padding: 14px; min-width: 0; }
+    .stat b { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; line-height: 1.05; overflow-wrap: anywhere; }
+    .stat span { color: var(--muted); font-size: .78rem; font-weight: 700; }
+    .cut-list { display: grid; gap: 16px; }
+    .cut-card { overflow: hidden; }
+    .cut-header { padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--navy); color: #fff; }
+    .cut-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .cut-title h3 { font-size: 1.02rem; }
+    .cut-title span { color: #c9d5da; font-size: .85rem; }
+    .cut-header > div:last-child { text-align: end; }
+    .cut-header > div:last-child small { display: block; color: #dfe9ff; font-size: .7rem; }
+    .cut-header > div:last-child strong { display: block; }
+    .cut-num { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 900; }
+    .cut-body { display: grid; grid-template-columns: minmax(230px, 1fr) minmax(250px, 1.2fr); gap: 20px; padding: 20px; align-items: center; }
+    .diagram-wrap { display: grid; place-items: center; min-height: 120px; padding: 14px; background: #f3f7ff; border-radius: 12px; overflow: auto; }
+    .diagram { position: relative; flex: none; background: #fff; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--green); overflow: hidden; }
+    .piece, .waste { position: absolute; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; padding: 5px; text-align: center; overflow: hidden; }
+    .piece { color: #102129; font-weight: 850; line-height: 1.15; }
+    .piece[draggable="true"] { cursor: grab; touch-action: none; }
+    .piece[draggable="true"]:active { cursor: grabbing; opacity: .72; }
+    .piece.locked { outline: 4px solid rgba(16,42,67,.35); outline-offset: -4px; cursor: not-allowed; }
+    .diagram.drag-target { box-shadow: 0 0 0 5px rgba(101,214,161,.5), 6px 6px 0 var(--green); }
+    .piece small { display: block; font-weight: 700; opacity: .72; margin-top: 3px; }
+    .waste { background: repeating-linear-gradient(135deg, rgba(169,68,50,.13), rgba(169,68,50,.13) 7px, rgba(255,255,255,.45) 7px, rgba(255,255,255,.45) 14px); color: #733326; font-size: .73rem; font-weight: 850; }
+    .steps h3 { font-size: .92rem; margin-bottom: 10px; }
+    .step { display: grid; grid-template-columns: 26px 1fr; gap: 9px; margin: 10px 0; color: #32434a; }
+    .step i { width: 24px; height: 24px; border-radius: 50%; background: #e8e3d9; display: grid; place-items: center; font-style: normal; font-weight: 850; font-size: .75rem; }
+    .step-main { min-width: 0; }
+    .piece-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .piece-action { border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); min-height: 31px; padding: 0 8px; font-size: .7rem; font-weight: 850; }
+    .piece-action:hover { border-color: var(--navy); background: #edf4ff; }
+    .piece-action:disabled { opacity: .45; cursor: not-allowed; }
+    .manual-hint { padding: 9px 12px; margin-bottom: 12px; border-radius: 9px; background: #eaf8f1; color: #265b47; font-size: .78rem; font-weight: 750; }
+    .leftovers { margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .leftovers strong { font-size: .85rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
+    .chip { background: #f7e5df; color: #783829; border-radius: 999px; padding: 5px 9px; font-size: .78rem; font-weight: 750; }
+    .assembly-section { padding: 22px; }
+    .assembly-section > header { margin-bottom: 18px; }
+    .assembly-section > header h2 { font-size: 1.15rem; }
+    .assembly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .assembly-card { border: 2px solid var(--line); border-radius: 13px; background: #fbfdff; overflow: hidden; }
+    .assembly-card summary { list-style: none; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; user-select: none; }
+    .assembly-card summary::-webkit-details-marker { display: none; }
+    .assembly-card summary:hover { background: #f3f7ff; }
+    .assembly-card h3 { font-size: .96rem; }
+    .assembly-card summary p { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+    .toggle-icon { width: 28px; height: 28px; flex: none; border-radius: 8px; display: grid; place-items: center; background: var(--navy); color: #fff; font-size: 1.15rem; font-weight: 900; }
+    .toggle-icon::before { content: "+"; }
+    .assembly-card[open] .toggle-icon::before { content: "−"; }
+    .assembly-content { padding: 14px 15px 15px; border-top: 1px solid var(--line); }
+    .room-piece-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
+    .room-piece-chip { background: #fff; border: 1px solid var(--line); border-left: 6px solid var(--piece-color, var(--navy)); border-radius: 8px; padding: 6px 9px; color: var(--ink); font-size: .76rem; font-weight: 850; }
+    .piece-index { color: #e8414f; font-weight: 950; }
+    .assembly-canvas-wrap { min-height: 220px; margin-top: 13px; padding: 16px; display: grid; place-items: center; background: #eef5ff; border-radius: 10px; overflow: auto; }
+    .assembly-canvas { position: relative; flex: none; border: 3px solid var(--navy); background: #fff; }
+    .assembly-piece { position: absolute; display: grid; place-items: center; text-align: center; padding: 5px; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); color: var(--ink); font-size: .84rem; font-weight: 900; line-height: 1.18; overflow: hidden; }
+    .assembly-piece small { display: block; margin-top: 3px; font-size: .75rem; font-weight: 800; }
+    .waste-section { padding: 22px; }
+    .waste-section > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 18px; }
+    .waste-section > header h2 { font-size: 1.15rem; }
+    .waste-total { flex: none; background: var(--accent); color: #fff; border-radius: 9px; padding: 8px 12px; font-size: .84rem; font-weight: 900; }
+    .waste-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+    .waste-piece-card { min-height: 230px; border: 2px solid var(--line); border-radius: 13px; padding: 14px; background: #fffaf7; display: grid; grid-template-rows: 1fr auto; gap: 12px; }
+    .waste-piece-graph { min-height: 155px; display: grid; place-items: center; overflow: auto; padding: 8px; background: #f7eee9; border-radius: 10px; }
+    .waste-piece-shape { flex: none; border: 3px solid #a94432; background: repeating-linear-gradient(135deg, #ffd8cf, #ffd8cf 9px, #fff4ef 9px, #fff4ef 18px); box-shadow: 5px 5px 0 #ffc0ad; }
+    .waste-piece-info { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+    .waste-piece-info h3 { font-size: .92rem; }
+    .waste-piece-info p { color: var(--muted); font-size: .75rem; margin-top: 3px; }
+    .waste-piece-info strong { white-space: nowrap; font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+    .empty { padding: 44px 24px; text-align: center; color: var(--muted); }
+    html[dir="rtl"] body {
+      font-family: Tahoma, Arial, sans-serif;
+      font-variant-numeric: lining-nums tabular-nums;
+      font-feature-settings: "locl" 0;
+    }
+    html[dir="rtl"] .brand, html[dir="rtl"] .cut-title { flex-direction: row-reverse; }
+    html[dir="rtl"] .eyebrow { letter-spacing: 0; text-transform: none; }
+    html[dir="rtl"] .stat { border-left: 0; border-right: 5px solid var(--navy); }
+    @media (max-width: 940px) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .input-card { position: static; }
+      .room-list { max-height: none; }
+      .plan-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 14px 10px 92px; }
+      html, body { max-width: 100%; overflow-x: hidden; }
+      .topbar { align-items: center; }
+      .topbar { flex-wrap: wrap; }
+      .brand { width: 100%; }
+      .brand h1 { font-size: clamp(1.45rem, 7vw, 1.9rem); overflow-wrap: anywhere; }
+      .top-actions { width: 100%; justify-content: space-between; }
+      .roll-badge { font-size: .8rem; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .cut-body { grid-template-columns: 1fr; padding: 14px; }
+      .input-toggle { display: inline-flex; align-items: center; }
+      .input-card.collapsed .input-body { display: none; }
+      .room-row { grid-template-columns: minmax(0, 1fr) 70px 12px 70px 30px; grid-template-areas: "name name name name remove" "method sidea times sideb ." "options options options options options"; gap: 8px 4px; padding: 11px 0; }
+      .room-row > * { min-width: 0; }
+      .room-row input { padding: 0 8px; }
+      .room-row > input, .room-method { height: 50px; }
+      .room-options-grid { grid-template-columns: 1fr; }
+      .actions { position: sticky; bottom: 0; z-index: 20; background: #fff; border-top: 2px solid var(--line); box-shadow: 0 -10px 24px rgba(16,42,67,.1); }
+      .btn { min-height: 54px; }
+      .actions .btn { min-width: 0; padding: 7px 8px; line-height: 1.25; white-space: normal; }
+      .plan-grid { grid-template-columns: 1fr; }
+      .summary-top { display: grid; }
+      .waste-section > header { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="2"/><path d="M8 9h8v6H8z" fill="#e6a23c"/><path d="M4 8h3M17 8h3M4 16h3M17 16h3" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><div id="brand-kicker" class="eyebrow">پلاندانەری کارگە</div><h1 id="brand-title">پلاندانەری بڕینی کومبار</h1></div>
+      </div>
+      <div class="top-actions">
+        <div class="lang-switch" aria-label="Language">
+          <button class="lang-btn" type="button" data-lang="en">English</button>
+          <button class="lang-btn active" type="button" data-lang="ku">کوردی</button>
+        </div>
+        <div id="roll-badge" class="roll-badge">ڕۆڵ: 4 م × 25 م</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <aside class="card input-card" aria-labelledby="rooms-title">
+        <div class="card-head"><div class="card-head-row"><div>
+          <h2 id="rooms-title">قەبارەی ژوورەکانی کڕیار</h2>
+          <p id="rooms-hint" class="hint">هەردوو لا بە مەتر بنووسە. پارچەکان دەسوڕێندرێنەوە بۆ کەمکردنەوەی پاشماوە.</p>
+        </div><button id="toggle-input" class="input-toggle" type="button">شاردنەوە</button></div></div>
+        <div class="input-body">
+        <div class="roll-settings">
+          <div class="setting-grid">
+            <label class="setting-field"><span id="roll-width-label">پانی ڕۆڵ (م)</span><input id="roll-width" class="numeric-input" type="text" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*" lang="en" dir="ltr" autocomplete="off" value="4"></label>
+            <label class="setting-field"><span id="roll-length-label">درێژی ڕۆڵ (م)</span><input id="roll-length" class="numeric-input" type="text" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*" lang="en" dir="ltr" autocomplete="off" value="25"></label>
+          </div>
+        </div>
+        <div id="room-list" class="room-list"></div>
+        <div id="error" class="error" role="alert"></div>
+        <div class="actions">
+          <button id="add-room" class="btn btn-secondary" type="button">+ زیادکردنی ژوور</button>
+          <button id="calculate" class="btn btn-primary" type="button">هەژمارکردنی بڕینەکان</button>
+        </div>
+        </div>
+      </aside>
+
+      <section id="results" class="results" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <script>
+    let ROLL_WIDTH = 4;
+    let ROLL_LENGTH = 25;
+    const COLORS = ['#ff9f9f','#8fe3b9','#9fc1ff','#ffe28a','#9fdfeb','#ffc28a','#c4b1ff','#b9e998'];
+    const ASSEMBLY_COLORS = ['#8fb8ff','#85ddb2','#ffabab','#ffe08a','#c6b3ff','#8fdae8','#ffc08b','#b8e28f'];
+    const initialRooms = [
+      { name: '', a: '', b: '', mode: 'efficient', direction: 'free', allowRotation: true, repeat: 0, seam: 0, edge: 0 },
+      { name: '', a: '', b: '', mode: 'efficient', direction: 'free', allowRotation: true, repeat: 0, seam: 0, edge: 0 }
+    ];
+    let roomId = 0;
+    let currentLang = 'ku';
+    let currentPlanVariants = [];
+    let activePlanKey = 'waste';
+    let activeWasteOption = 0;
+    let draggedPieceId = null;
+    const copy = {
+      en: {
+        kicker:'Workshop planner', title:'Carpet Cut Planner', roll:'Roll: {w} m × {h} m', rooms:'Customer room sizes',
+        hint:'Enter both sides in metres. Pieces may be rotated to reduce waste.', add:'+ Add room', calculate:'Calculate cuts',
+        rollWidth:'Roll width (m)', rollLength:'Roll length (m)', method:'Oversized room method', roomMethod:'Cut method', largeTitle:'Large pieces',
+        largeHelp:'Fewer joins, more offcut', efficientTitle:'Minimum waste', efficientHelp:'Smaller joins, less offcut', piece:'piece',
+        invalidRoll:'Enter a valid roll width and roll length.', noFit:'{name} cannot fit within the selected roll dimensions.',
+        assembled:'Room pieces and assembly', assembledHelp:'Expand only the rooms you want to inspect.', finalSize:'Final size', piecesNeeded:'Pieces needed',
+        roomName:'Room name', sideA:'First side in metres', sideB:'Second side in metres', widthPlaceholder:'Width', heightPlaceholder:'Height', remove:'Remove room', room:'Room', optimized:'Optimized plan', cutMain:'Cut {n} main piece{s} from the roll',
+        useRoll:'Use {length} m of roll length across {rolls} roll{s}.', used:'{n}% material used', mainCuts:'Main cuts',
+        rollNeeded:'Roll length needed', cutWaste:'Cut-piece waste', uncutLeft:'Uncut roll left', mainPiece:'Main piece: {w} × {h} m',
+        totalCutArea:'Total area to cut', usedArea:'Room pieces area', mainCutArea:'Main cut area',
+        roomPieces:'{n} room piece{s} from this cut', divide:'How to divide this piece', cutRoom:'Cut {name} at {w} m wide × {h} m long{rotated}.',
+        rotated:' (rotated)', extras:'Extra pieces remaining', noWaste:'No waste', invalid:'Enter two valid sizes for {name}.',
+        tooWide:'{name} cannot fit on a 4 m-wide roll. Both sides are wider than 4 m.', diagram:'Cut diagram for main piece {n}',
+        wastePiecesTitle:'All remaining waste pieces', wastePiecesHelp:'Every offcut left after all room pieces are cut.', wastePiece:'Waste piece', sourceCut:'From main cut {n}', totalWaste:'Total waste',
+        advanced:'Direction and allowances', direction:'Carpet direction', freeDirection:'Free direction', widthAcross:'Width across roll', heightAcross:'Height across roll', allowRotation:'Allow rotation',
+        patternRepeat:'Pattern repeat (m)', seamAllowance:'Seam allowance (m)', edgeAllowance:'Wall allowance per edge (m)', invalidOptions:'Enter valid non-negative allowances for {name}.',
+        comparePlans:'Compare cutting plans', compareHelp:'The recommendation minimizes roll length and waste first, then prefers balanced pieces without narrow strips.', minWastePlan:'Minimum waste', largePlan:'Largest pieces', fewestSeamsPlan:'Fewest seams', shortestPlan:'Shortest roll', recommended:'Best',
+        planMetrics:'{cuts} cuts · {pieces} pieces · {waste} m² waste', equalPlans:'{n} equally efficient options', equalPlansHelp:'These options use exactly the same roll length and waste. Open either one to compare the complete layout.', option:'Option', manualEdit:'Manual layout', dragHelp:'Drag an unlocked colored piece onto another main cut. Use Move, Rotate, or Lock for fine adjustments.', rotate:'Rotate', lock:'Lock', unlock:'Unlock', moveTo:'Move piece', newCut:'New cut', moveFailed:'That piece does not fit in the selected cut.', rotationBlocked:'This room direction does not allow rotation.',
+        measuredSize:'Measured size', cutSize:'Cut size with allowances', showInput:'Show rooms', hideInput:'Hide rooms',
+        emptyPrompt:'Enter room dimensions to see the cutting plan.'
+      },
+      ku: {
+        kicker:'پلاندانەری کارگە', title:'پلاندانەری بڕینی کومبار', roll:'ڕۆڵ: {w} م × {h} م', rooms:'قەبارەی ژوورەکانی کڕیار',
+        hint:'هەردوو لا بە مەتر بنووسە. پارچەکان دەسوڕێندرێنەوە بۆ کەمکردنەوەی پاشماوە.', add:'+ زیادکردنی ژوور', calculate:'هەژمارکردنی بڕینەکان',
+        rollWidth:'پانی ڕۆڵ (م)', rollLength:'درێژی ڕۆڵ (م)', method:'شێوازی ژووری گەورە', roomMethod:'شێوازی بڕین', largeTitle:'پارچە گەورەکان',
+        largeHelp:'جۆینی کەمتر، پاشماوەی زیاتر', efficientTitle:'کەمترین پاشماوە', efficientHelp:'پارچەی بچووکتر، پاشماوەی کەمتر', piece:'پارچە',
+        invalidRoll:'پانی و درێژی دروستی ڕۆڵ بنووسە.', noFit:'{name} لە قەبارەی دیاریکراوی ڕۆڵدا ناگونجێت.',
+        assembled:'پارچەکان و پێکەوەکردنی ژوور', assembledHelp:'تەنها ئەو ژوورانە بکەرەوە کە دەتەوێت بپشکنیت.', finalSize:'قەبارەی کۆتایی', piecesNeeded:'پارچە پێویستەکان',
+        roomName:'ناوی ژوور', sideA:'لای یەکەم بە مەتر', sideB:'لای دووەم بە مەتر', widthPlaceholder:'پانی', heightPlaceholder:'درێژی', remove:'سڕینەوەی ژوور', room:'ژوور', optimized:'پلانی باشکراو', cutMain:'لە ڕۆڵەکە {n} پارچەی سەرەکی ببڕە',
+        useRoll:'{length} مەتر لە درێژی ڕۆڵ بەکاربهێنە، لە {rolls} ڕۆڵ.', used:'{n}% مادە بەکارهاتووە', mainCuts:'بڕینی سەرەکی',
+        rollNeeded:'درێژی پێویستی ڕۆڵ', cutWaste:'پاشماوەی بڕین', uncutLeft:'ماوەی ڕۆڵ', mainPiece:'پارچەی سەرەکی: {w} × {h} م',
+        totalCutArea:'کۆی ڕووبەری بڕین', usedArea:'ڕووبەری پارچەکانی ژوور', mainCutArea:'ڕووبەری بڕینی سەرەکی',
+        roomPieces:'{n} پارچەی ژوور لەم بڕینە', divide:'چۆنیەتی دابەشکردنی پارچەکە', cutRoom:'{name} ببڕە بە پانی {w} م × درێژی {h} م{rotated}.',
+        rotated:' (سوڕێندراوەتەوە)', extras:'پارچە زیادە ماوەکان', noWaste:'هیچ پاشماوەیەک نییە', invalid:'دوو قەبارەی دروست بۆ {name} بنووسە.',
+        tooWide:'{name} لە ڕۆڵی پانی 4 مەتر ناگونجێت، چونکە هەردوو لاکەی لە 4 مەتر زیاترە.', diagram:'نەخشەی بڕینی پارچەی سەرەکی {n}',
+        wastePiecesTitle:'هەموو پارچە پاشماوەکان', wastePiecesHelp:'هەر پارچەیەکی ماوە دوای بڕینی هەموو ژوورەکان.', wastePiece:'پارچەی پاشماوە', sourceCut:'لە بڕینی سەرەکی {n}', totalWaste:'کۆی پاشماوە',
+        advanced:'ئاڕاستە و زیادەی بڕین', direction:'ئاڕاستەی کومبار', freeDirection:'ئاڕاستەی ئازاد', widthAcross:'پانی بە پانی ڕۆڵ', heightAcross:'درێژی بە پانی ڕۆڵ', allowRotation:'ڕێگەدان بە سوڕاندنەوە',
+        patternRepeat:'دووبارەبوونەوەی نەخش (م)', seamAllowance:'زیادەی جۆین (م)', edgeAllowance:'زیادەی دیوار بۆ هەر لا (م)', invalidOptions:'زیادەی دروست و نەریت بنووسە بۆ {name}.',
+        comparePlans:'بەراوردکردنی پلانەکانی بڕین', compareHelp:'پێشنیارەکە سەرەتا کەمترین درێژی ڕۆڵ و پاشماوە هەڵدەبژێرێت، پاشان پارچە هاوسەنگەکان بەبێ پارچەی باریک.', minWastePlan:'کەمترین پاشماوە', largePlan:'گەورەترین پارچەکان', fewestSeamsPlan:'کەمترین جۆین', shortestPlan:'کورتترین ڕۆڵ', recommended:'باشترین',
+        planMetrics:'{cuts} بڕین · {pieces} پارچە · {waste} م² پاشماوە', equalPlans:'{n} هەڵبژاردەی یەکسان لە ڕووی کارامەیی', equalPlansHelp:'ئەم هەڵبژاردانە هەمان درێژی ڕۆڵ و هەمان پاشماوەیان هەیە. هەر یەکێکیان بکەرەوە بۆ بەراوردکردنی پلانی تەواو.', option:'هەڵبژاردە', manualEdit:'ڕێکخستنی دەستی', dragHelp:'پارچەی ڕەنگاوڕەنگی کراوە ڕابکێشە بۆ بڕینێکی سەرەکی تر. گواستنەوە، سوڕاندنەوە یان قوفڵ بەکاربهێنە.', rotate:'سوڕاندنەوە', lock:'قوفڵ', unlock:'کردنەوەی قوفڵ', moveTo:'گواستنەوەی پارچە', newCut:'بڕینی نوێ', moveFailed:'ئەم پارچەیە لە بڕینە هەڵبژێردراوەکەدا ناگونجێت.', rotationBlocked:'ئاڕاستەی ئەم ژوورە ڕێگە بە سوڕاندنەوە نادات.',
+        measuredSize:'قەبارەی پێوانەکراو', cutSize:'قەبارەی بڕین لەگەڵ زیادەکان', showInput:'پیشاندانی ژوورەکان', hideInput:'شاردنەوەی ژوورەکان',
+        emptyPrompt:'قەبارەی ژوورەکان بنووسە بۆ بینینی پلانی بڕین.'
+      }
+    };
+    function t(key, vars = {}) { return Object.entries(vars).reduce((s,[k,v]) => s.replaceAll(`{${k}}`, v), copy[currentLang][key]); }
+    function unit(square = false) { return currentLang === 'ku' ? `م${square ? '²' : ''}` : `m${square ? '²' : ''}`; }
+    function englishDigits(value) {
+      return String(value)
+        .replace(/[\u0660-\u0669]/g, digit => digit.charCodeAt(0) - 0x0660)
+        .replace(/[\u06F0-\u06F9]/g, digit => digit.charCodeAt(0) - 0x06F0)
+        .replace(/[\u066B,]/g, '.');
+    }
+
+    function enforceEnglishDigits(root = document.body) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach(node => {
+        const normalized = englishDigits(node.nodeValue);
+        if (normalized !== node.nodeValue) node.nodeValue = normalized;
+      });
+      root.querySelectorAll?.('input').forEach(input => {
+        const normalized = englishDigits(input.value);
+        if (normalized !== input.value) input.value = normalized;
+      });
+    }
+    const list = document.querySelector('#room-list');
+    const results = document.querySelector('#results');
+    const errorBox = document.querySelector('#error');
+
+    function addRoom(room = { name: '', a: '', b: '', mode: 'efficient', direction: 'free', allowRotation: true, repeat: 0, seam: 0, edge: 0 }) {
+      const id = ++roomId;
+      const row = document.createElement('div');
+      row.className = 'room-row';
+      row.dataset.id = id;
+      row.innerHTML = `
+        <input class="name" aria-label="${t('roomName')}" placeholder="${t('roomName')}" value="${escapeHtml(room.name)}">
+        <input class="side-a numeric-input" aria-label="${t('sideA')}" type="text" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*" lang="en" dir="ltr" autocomplete="off" placeholder="${t('widthPlaceholder')}" value="${room.a}">
+        <span class="times" aria-hidden="true">×</span>
+        <input class="side-b numeric-input" aria-label="${t('sideB')}" type="text" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*" lang="en" dir="ltr" autocomplete="off" placeholder="${t('heightPlaceholder')}" value="${room.b}">
+        <select class="room-method" aria-label="${t('roomMethod')}">
+          <option value="efficient" ${room.mode !== 'large' ? 'selected' : ''}>${t('efficientTitle')}</option>
+          <option value="large" ${room.mode === 'large' ? 'selected' : ''}>${t('largeTitle')}</option>
+        </select>
+        <button class="remove" type="button" aria-label="${t('remove')}" title="${t('remove')}">✕</button>
+        <details class="room-options">
+          <summary data-i18n="advanced">${t('advanced')}</summary>
+          <div class="room-options-grid">
+            <label class="option-field"><span data-i18n="direction">${t('direction')}</span><select class="direction">
+              <option value="free" ${room.direction === 'free' || !room.direction ? 'selected' : ''} data-i18n="freeDirection">${t('freeDirection')}</option>
+              <option value="width" ${room.direction === 'width' ? 'selected' : ''} data-i18n="widthAcross">${t('widthAcross')}</option>
+              <option value="height" ${room.direction === 'height' ? 'selected' : ''} data-i18n="heightAcross">${t('heightAcross')}</option>
+            </select></label>
+            <label class="check-field"><input class="allow-rotation" type="checkbox" ${room.allowRotation !== false ? 'checked' : ''}><span data-i18n="allowRotation">${t('allowRotation')}</span></label>
+            <label class="option-field"><span data-i18n="patternRepeat">${t('patternRepeat')}</span><input class="pattern-repeat numeric-input" type="text" inputmode="decimal" lang="en" dir="ltr" value="${room.repeat ?? 0}"></label>
+            <label class="option-field"><span data-i18n="seamAllowance">${t('seamAllowance')}</span><input class="seam-allowance numeric-input" type="text" inputmode="decimal" lang="en" dir="ltr" value="${room.seam ?? 0}"></label>
+            <label class="option-field"><span data-i18n="edgeAllowance">${t('edgeAllowance')}</span><input class="edge-allowance numeric-input" type="text" inputmode="decimal" lang="en" dir="ltr" value="${room.edge ?? 0}"></label>
+          </div>
+        </details>`;
+      row.querySelector('.remove').addEventListener('click', () => {
+        if (list.children.length > 1) row.remove();
+      });
+      const direction = row.querySelector('.direction');
+      const rotation = row.querySelector('.allow-rotation');
+      const syncDirection = () => { rotation.disabled = direction.value !== 'free'; };
+      direction.addEventListener('change', syncDirection);
+      syncDirection();
+      list.appendChild(row);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function readRooms() {
+      return [...list.querySelectorAll('.room-row')].map((row, index) => {
+        const name = row.querySelector('.name').value.trim();
+        const sideA = row.querySelector('.side-a').value.trim();
+        const sideB = row.querySelector('.side-b').value.trim();
+        if (!name && !sideA && !sideB) return null;
+        const repeat = Number(row.querySelector('.pattern-repeat').value || 0);
+        const seam = Number(row.querySelector('.seam-allowance').value || 0);
+        const edge = Number(row.querySelector('.edge-allowance').value || 0);
+        const measuredA = Number(sideA);
+        const measuredB = Number(sideB);
+        const direction = row.querySelector('.direction').value;
+        return {
+          id: Number(row.dataset.id),
+          name: name || `${t('room')} ${index + 1}`,
+          measuredA,
+          measuredB,
+          a: measuredA + edge * 2,
+          b: measuredB + edge * 2,
+          mode: row.querySelector('.room-method').value,
+          direction,
+          allowRotation: direction === 'free' && row.querySelector('.allow-rotation').checked,
+          patternRepeat: repeat,
+          seamAllowance: seam,
+          edgeAllowance: edge,
+          color: COLORS[index % COLORS.length]
+        };
+      }).filter(Boolean);
+    }
+
+    function orientations(room) {
+      const opts = [];
+      const repeat = Math.max(0, Number(room.patternRepeat) || 0);
+      const add = (w, rawHeight, rotated) => {
+        const h = repeat > .0001 ? Math.ceil((rawHeight - .000001) / repeat) * repeat : rawHeight;
+        if (w <= ROLL_WIDTH + .0001 && h <= ROLL_LENGTH + .0001) opts.push({ w, h, rawHeight, rotated });
+      };
+      if (room.direction === 'width') add(room.a, room.b, false);
+      else if (room.direction === 'height') add(room.b, room.a, true);
+      else {
+        add(room.a, room.b, false);
+        if (room.allowRotation !== false && Math.abs(room.a - room.b) > .0001) add(room.b, room.a, true);
+      }
+      return opts;
+    }
+
+    function roomAxes(room) {
+      if (room.direction === 'width') return [[room.a, room.b, true]];
+      if (room.direction === 'height') return [[room.b, room.a, false]];
+      return [[room.a, room.b, true], [room.b, room.a, false]];
+    }
+
+    function splitCoverage(total, maximum, overlap = 0) {
+      if (total <= .0001 || maximum <= .0001 || overlap < 0 || overlap >= maximum) return [];
+      const segments = [];
+      let remaining = total;
+      let offset = 0;
+      let first = true;
+      while (remaining > .0001) {
+        const maxCoverage = first ? maximum : maximum - overlap;
+        const coverage = Math.min(maxCoverage, remaining);
+        segments.push({ cut: coverage + (first ? 0 : overlap), coverage, offset });
+        remaining -= coverage;
+        offset += coverage;
+        first = false;
+      }
+      return segments;
+    }
+
+    function balancedCoverage(total, count, overlap = 0) {
+      if (count < 1) return [];
+      const coverage = total / count;
+      const cut = coverage + overlap * (count - 1) / count;
+      return Array.from({ length: count }, (_, index) => ({ cut, coverage, offset: index * coverage }));
+    }
+
+    function splitFreeRect(free, placed) {
+      const right = { x: free.x + placed.w, y: free.y, w: free.w - placed.w, h: free.h };
+      const below = { x: free.x, y: free.y + placed.h, w: placed.w, h: free.h - placed.h };
+      return [right, below].filter(r => r.w > .0001 && r.h > .0001);
+    }
+
+    function bestFitInPanel(room, panel) {
+      let best = null;
+      orientations(room).forEach(o => {
+        panel.free.forEach((f, freeIndex) => {
+          if (o.w <= f.w + .0001 && o.h <= f.h + .0001) {
+            const widthGap = Math.max(0, f.w - o.w);
+            const heightGap = Math.max(0, f.h - o.h);
+            const areaWaste = Math.max(0, f.w * f.h - o.w * o.h);
+            const exactMatch = widthGap < .0001 && heightGap < .0001;
+            const matchingEdges = (widthGap < .0001 ? 1 : 0) + (heightGap < .0001 ? 1 : 0);
+            const score = exactMatch ? -1000000 : areaWaste * 100 - matchingEdges * 10 + Math.min(widthGap, heightGap);
+            if (!best || score < best.score) best = { ...o, freeIndex, score, exactMatch, x: f.x, y: f.y };
+          }
+        });
+      });
+      return best;
+    }
+
+    function place(panel, room, fit) {
+      const free = panel.free.splice(fit.freeIndex, 1)[0];
+      const placed = { room, x: fit.x, y: fit.y, w: fit.w, h: fit.h, rotated: fit.rotated };
+      panel.placements.push(placed);
+      panel.free.push(...splitFreeRect(free, placed));
+    }
+
+    function buildPanel(seed, first, candidates, panelHeight = first.h) {
+      const panel = { width: ROLL_WIDTH, height: panelHeight, placements: [], free: [] };
+      panel.placements.push({ room: seed, x: 0, y: 0, w: first.w, h: first.h, rotated: first.rotated });
+      panel.free.push(...splitFreeRect({ x:0, y:0, w:ROLL_WIDTH, h:panelHeight }, panel.placements[0]));
+      const available = [...candidates];
+      let found = true;
+      while (found) {
+        found = null;
+        available.forEach((room, index) => {
+          const fit = bestFitInPanel(room, panel);
+          if (fit && (!found || fit.score < found.fit.score)) found = { room, index, fit };
+        });
+        if (found) {
+          place(panel, found.room, found.fit);
+          available.splice(found.index, 1);
+        }
+      }
+      panel.usedIds = new Set(panel.placements.slice(1).map(p => p.room.id));
+      return panel;
+    }
+
+    function labelPieces(room, pieces) {
+      return pieces.map((piece, index) => ({
+        ...piece,
+        id: `${room.id}-${index + 1}-${pieces.length}`,
+        name: pieces.length > 1 ? `${room.name} — ${t('piece')} ${index + 1}/${pieces.length}` : room.name,
+        color: room.color,
+        parentName: room.name,
+        roomId: room.id,
+        targetA: room.measuredA ?? room.a,
+        targetB: room.measuredB ?? room.b,
+        cutTargetA: room.a,
+        cutTargetB: room.b,
+        direction: 'free',
+        allowRotation: room.direction === 'free' && room.allowRotation !== false,
+        patternRepeat: room.patternRepeat || 0,
+        seamAllowance: room.seamAllowance || 0,
+        edgeAllowance: room.edgeAllowance || 0
+      }));
+    }
+
+    function assemblyRect(room, acrossIsA, x, y, w, h) {
+      return acrossIsA
+        ? { x, y, w, h, totalW: room.a, totalH: room.b }
+        : { x: y, y: x, w: h, h: w, totalW: room.a, totalH: room.b };
+    }
+
+    function largePieceCandidates(room) {
+      return roomAxes(room).map(([across, length, acrossIsA]) => {
+        if (length > ROLL_LENGTH) return null;
+        const seam = Math.max(0, room.seamAllowance || 0);
+        let count = Math.max(1, Math.ceil(across / ROLL_WIDTH));
+        let pieceWidth = (across + seam * (count - 1)) / count;
+        while (pieceWidth > ROLL_WIDTH + .0001 && count < 100) {
+          count += 1;
+          pieceWidth = (across + seam * (count - 1)) / count;
+        }
+        if (pieceWidth > ROLL_WIDTH + .0001) return null;
+        const coverageWidth = across / count;
+        return labelPieces(room, Array.from({ length: count }, (_, index) => ({
+          a: pieceWidth,
+          b: length,
+          assembly: assemblyRect(room, acrossIsA, index * coverageWidth, 0, coverageWidth, length)
+        })));
+      }).filter(Boolean);
+    }
+
+    function efficientPieceCandidates(room) {
+      const candidates = [];
+      const seen = new Set();
+      const seam = Math.max(0, room.seamAllowance || 0);
+      const addCandidate = pieces => {
+        if (!pieces.length) return;
+        const signature = pieces.map(piece => `${piece.a.toFixed(4)}x${piece.b.toFixed(4)}`).sort().join('|');
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          candidates.push(labelPieces(room, pieces));
+        }
+      };
+      roomAxes(room).forEach(([across, length, acrossIsA]) => {
+        const widths = splitCoverage(across, ROLL_WIDTH, seam);
+        if (!widths.length) return;
+        if (length <= ROLL_LENGTH + .0001) {
+          addCandidate(widths.map(width => ({
+            a: width.cut,
+            b: length,
+            assembly: assemblyRect(room, acrossIsA, width.offset, 0, width.coverage, length)
+          })));
+        }
+        const buildSegmented = balanced => {
+          const pieces = [];
+          widths.forEach(width => {
+            let lengths;
+            if (width.cut >= ROLL_WIDTH - .0001 && length <= ROLL_LENGTH + .0001) {
+              lengths = [{ cut:length, coverage:length, offset:0 }];
+            } else if (balanced) {
+              const count = Math.max(1, Math.floor(ROLL_WIDTH / width.cut));
+              lengths = balancedCoverage(length, count, seam).filter(segment => segment.cut <= ROLL_LENGTH + .0001);
+              if (lengths.length !== count) lengths = [];
+            } else {
+              lengths = splitCoverage(length, Math.min(ROLL_WIDTH, ROLL_LENGTH), seam);
+            }
+            lengths.forEach(segment => pieces.push({
+              a: width.cut,
+              b: segment.cut,
+              assembly: assemblyRect(room, acrossIsA, width.offset, segment.offset, width.coverage, segment.coverage)
+            }));
+          });
+          addCandidate(pieces);
+        };
+        buildSegmented(false);
+        buildSegmented(true);
+      });
+      return candidates;
+    }
+
+    function aestheticAssemblyScore(pieces) {
+      const groups = new Map();
+      pieces.filter(piece => piece.assembly).forEach(piece => {
+        if (!groups.has(piece.roomId)) groups.set(piece.roomId, []);
+        groups.get(piece.roomId).push(piece);
+      });
+      let score = 0;
+      groups.forEach(group => {
+        if (!group.length) return;
+        const layout = group[0].assembly;
+        const roomWidth = layout.totalW;
+        const roomHeight = layout.totalH;
+        const roomArea = roomWidth * roomHeight;
+        const areas = group.map(piece => piece.assembly.w * piece.assembly.h).sort((a,b) => b-a);
+
+        if (group.length > 1) {
+          const sliverLimit = Math.min(1.5, Math.min(roomWidth, roomHeight) * .25);
+          group.forEach(piece => {
+            const narrowSide = Math.min(piece.assembly.w, piece.assembly.h);
+            if (narrowSide < sliverLimit) score += Math.pow(sliverLimit - narrowSide, 2) * 10000;
+          });
+
+          const secondary = areas.slice(1);
+          if (secondary.length > 1) {
+            const largestSecondary = secondary[0];
+            const smallestSecondary = secondary[secondary.length - 1];
+            score += ((largestSecondary - smallestSecondary) / Math.max(largestSecondary, .0001)) * 140;
+          }
+
+          const totalPiecePerimeter = group.reduce((sum, piece) => sum + 2 * (piece.assembly.w + piece.assembly.h), 0);
+          const roomPerimeter = 2 * (roomWidth + roomHeight);
+          const internalSeamLength = Math.max(0, (totalPiecePerimeter - roomPerimeter) / 2);
+          score += internalSeamLength * 2;
+          score += (1 - areas[0] / Math.max(roomArea, .0001)) * 12;
+          score += (group.length - 1) * .5;
+        }
+      });
+      return score;
+    }
+
+    function expandRoomStates(rooms, strategy = 'waste') {
+      let states = [{ pieces: [], length: 0, waste: 0, panels: 0, smallestPieceArea: Infinity, aesthetic: 0 }];
+      rooms.forEach(room => {
+        let candidates;
+        const wholePiece = {
+            ...room,
+            parentName: room.name,
+            roomId: room.id,
+            targetA: room.measuredA ?? room.a,
+            targetB: room.measuredB ?? room.b,
+            cutTargetA: room.a,
+            cutTargetB: room.b,
+            assembly: { x: 0, y: 0, w: room.a, h: room.b, totalW: room.a, totalH: room.b }
+          };
+        if (room.mode === 'large') {
+          candidates = orientations(room).length ? [[wholePiece]] : largePieceCandidates(room);
+        } else {
+          candidates = [...(orientations(room).length ? [[wholePiece]] : []), ...efficientPieceCandidates(room), ...largePieceCandidates(room)];
+        }
+        if (!candidates.length) throw new Error(t('noFit', {name:room.name}));
+
+        const nextStates = [];
+        states.forEach(state => candidates.forEach(candidate => {
+          const pieces = [...state.pieces, ...candidate];
+          try {
+            const panels = planCuts(pieces, strategy, true);
+            const length = panels.reduce((sum, panel) => sum + panel.height, 0);
+            const area = pieces.reduce((sum, piece) => sum + piece.a * piece.b, 0);
+            const smallestPieceArea = Math.min(...pieces.map(piece => piece.a * piece.b));
+            nextStates.push({ pieces, length, waste: length * ROLL_WIDTH - area, panels: panels.length, smallestPieceArea, aesthetic:aestheticAssemblyScore(pieces) });
+          } catch (_) {}
+        }));
+
+        nextStates.sort((a, b) => {
+          if (strategy === 'large') return b.smallestPieceArea - a.smallestPieceArea || a.pieces.length - b.pieces.length || a.length - b.length || a.waste - b.waste;
+          if (strategy === 'seams') return a.pieces.length - b.pieces.length || a.panels - b.panels || a.length - b.length || a.waste - b.waste;
+          if (strategy === 'length') return a.length - b.length || a.panels - b.panels || a.pieces.length - b.pieces.length || a.waste - b.waste;
+          return a.length - b.length || a.waste - b.waste || a.aesthetic - b.aesthetic || b.smallestPieceArea - a.smallestPieceArea || a.pieces.length - b.pieces.length || a.panels - b.panels;
+        });
+        states = nextStates.slice(0, 128);
+        if (!states.length) throw new Error(t('noFit', {name:room.name}));
+      });
+      return states;
+    }
+
+    function expandRooms(rooms, strategy = 'waste') {
+      return expandRoomStates(rooms, strategy)[0].pieces;
+    }
+
+    function planCutsForOrder(orderedRooms, strategy = 'waste') {
+      const remaining = [...orderedRooms];
+      const panels = [];
+      while (remaining.length) {
+        const seed = remaining.shift();
+        const seedOptions = orientations(seed).sort((x,y) => x.h - y.h || y.w - x.w);
+        if (!seedOptions.length) throw new Error(t('noFit', {name:seed.name}));
+        const options = seedOptions.flatMap(first => {
+          const possibleHeights = new Set([first.h]);
+          remaining.forEach(room => orientations(room).forEach(o => {
+            if (o.h >= first.h && o.h <= ROLL_LENGTH) possibleHeights.add(o.h);
+          }));
+          return [...possibleHeights].map(height => buildPanel(seed, first, remaining, height));
+        });
+        options.forEach(panel => {
+          panel.packedArea = panel.placements.reduce((sum,p) => sum + p.w*p.h, 0);
+          panel.utilization = panel.packedArea / (ROLL_WIDTH * panel.height);
+          panel.throughput = panel.packedArea / panel.height;
+        });
+        options.sort((a,b) => {
+          if (strategy === 'seams') return b.placements.length - a.placements.length || b.throughput - a.throughput || a.height - b.height;
+          if (strategy === 'large') return a.height - b.height || b.utilization - a.utilization || b.throughput - a.throughput;
+          if (strategy === 'length') return a.height - b.height || b.throughput - a.throughput || b.utilization - a.utilization;
+          return b.throughput - a.throughput || b.utilization - a.utilization || a.height - b.height;
+        });
+        const panel = options[0];
+        for (let i = remaining.length - 1; i >= 0; i--) if (panel.usedIds.has(remaining[i].id)) remaining.splice(i, 1);
+        panels.push(panel);
+      }
+      return panels.sort((a,b) => b.height - a.height);
+    }
+
+    function planCuts(rooms, strategy = 'waste', quick = false) {
+      const areaOrder = [...rooms].sort((x, y) => (y.a * y.b) - (x.a * x.b) || Math.max(y.a,y.b) - Math.max(x.a,x.b));
+      if (quick || rooms.length < 2) return planCutsForOrder(areaOrder, strategy);
+      const orders = [
+        areaOrder,
+        [...rooms].sort((x,y) => Math.max(y.a,y.b) - Math.max(x.a,x.b) || y.a*y.b - x.a*x.b),
+        [...rooms].sort((x,y) => Math.min(y.a,y.b) - Math.min(x.a,x.b) || y.a*y.b - x.a*x.b),
+        [...areaOrder].reverse()
+      ];
+      const unique = new Map();
+      orders.forEach(order => {
+        const signature = order.map(piece => piece.id).join('|');
+        if (!unique.has(signature)) unique.set(signature, planCutsForOrder(order, strategy));
+      });
+      const plans = [...unique.values()];
+      const score = panels => {
+        const length = panels.reduce((sum,p) => sum + p.height, 0);
+        const waste = panels.reduce((sum,p) => sum + p.free.reduce((s,r) => s + r.w*r.h, 0), 0);
+        return { length, waste, cuts:panels.length };
+      };
+      return plans.sort((a,b) => {
+        const x = score(a), y = score(b);
+        if (strategy === 'seams') return x.cuts - y.cuts || x.length - y.length || x.waste - y.waste;
+        if (strategy === 'large') return x.cuts - y.cuts || x.length - y.length || x.waste - y.waste;
+        return x.length - y.length || x.waste - y.waste || x.cuts - y.cuts;
+      })[0];
+    }
+
+    function fmt(n) { return Number(n.toFixed(2)).toString(); }
+
+    const PLAN_CONFIGS = [
+      { key:'waste', label:'minWastePlan' },
+      { key:'large', label:'largePlan' },
+      { key:'seams', label:'fewestSeamsPlan' },
+      { key:'length', label:'shortestPlan' }
+    ];
+
+    function planMetrics(pieces, panels) {
+      const totalLength = panels.reduce((sum,p) => sum + p.height, 0);
+      const usedArea = panels.reduce((sum,p) => sum + p.placements.reduce((placedSum, placed) => placedSum + placed.w * placed.h, 0), 0);
+      const cutArea = totalLength * ROLL_WIDTH;
+      return { totalLength, usedArea, cutArea, wasteArea: Math.max(0, cutArea - usedArea), aesthetic:aestheticAssemblyScore(pieces), cuts:panels.length, pieces:pieces.length };
+    }
+
+    function pieceLayoutSignature(pieces) {
+      return [...pieces].sort((a,b) => String(a.roomId).localeCompare(String(b.roomId)) || String(a.id).localeCompare(String(b.id))).map(piece => {
+        const a = piece.assembly;
+        return `${piece.roomId}:${a.x.toFixed(3)},${a.y.toFixed(3)},${a.w.toFixed(3)},${a.h.toFixed(3)}:${piece.a.toFixed(3)}x${piece.b.toFixed(3)}`;
+      }).join('|');
+    }
+
+    function buildWasteAlternatives(rooms, config) {
+      const states = expandRoomStates(rooms, 'waste');
+      const baseline = states[0];
+      const seen = new Set();
+      const candidates = states.filter(state => Math.abs(state.length - baseline.length) < .0001 && Math.abs(state.waste - baseline.waste) < .0001).slice(0, 40).flatMap(state => {
+        const signature = pieceLayoutSignature(state.pieces);
+        if (seen.has(signature)) return [];
+        seen.add(signature);
+        const panels = planCuts(state.pieces, 'waste');
+        return [{ ...config, pieces:state.pieces, panels, metrics:planMetrics(state.pieces, panels), lockedIds:new Set(), manual:false }];
+      }).sort((a,b) =>
+        a.metrics.totalLength - b.metrics.totalLength ||
+        a.metrics.wasteArea - b.metrics.wasteArea ||
+        a.metrics.aesthetic - b.metrics.aesthetic ||
+        a.metrics.pieces - b.metrics.pieces ||
+        a.metrics.cuts - b.metrics.cuts
+      );
+      const best = candidates[0];
+      return candidates.filter(plan => Math.abs(plan.metrics.totalLength - best.metrics.totalLength) < .0001 && Math.abs(plan.metrics.wasteArea - best.metrics.wasteArea) < .0001).slice(0, 4);
+    }
+
+    function buildPlanVariants(rooms) {
+      return PLAN_CONFIGS.map(config => {
+        if (config.key === 'waste') {
+          const alternatives = buildWasteAlternatives(rooms, config);
+          return { ...alternatives[0], alternatives };
+        }
+        const pieces = expandRooms(rooms, config.key);
+        const panels = planCuts(pieces, config.key);
+        return { ...config, pieces, panels, metrics:planMetrics(pieces, panels), lockedIds:new Set(), manual:false };
+      });
+    }
+
+    function chooseRecommendedPlan(plans) {
+      return [...plans].sort((a,b) =>
+        a.metrics.totalLength - b.metrics.totalLength ||
+        a.metrics.wasteArea - b.metrics.wasteArea ||
+        a.metrics.aesthetic - b.metrics.aesthetic ||
+        a.metrics.pieces - b.metrics.pieces ||
+        a.metrics.cuts - b.metrics.cuts
+      )[0];
+    }
+
+    function renderPlanChoices() {
+      if (!currentPlanVariants.length) return '';
+      const recommended = chooseRecommendedPlan(currentPlanVariants).key;
+      const cards = currentPlanVariants.map(plan => `<button class="plan-choice ${plan.key === activePlanKey ? 'active' : ''}" type="button" data-plan-key="${plan.key}">
+        ${plan.key === recommended ? `<span class="recommended">${t('recommended')}</span>` : ''}
+        <h3>${t(plan.label)}</h3>
+        <strong>${fmt(plan.metrics.totalLength)} ${unit()}</strong>
+        <small>${t('planMetrics',{cuts:plan.metrics.cuts,pieces:plan.metrics.pieces,waste:fmt(plan.metrics.wasteArea)})}</small>
+      </button>`).join('');
+      return `<section class="card plan-compare"><header><div class="eyebrow">${t('optimized')}</div><h2>${t('comparePlans')}</h2><p class="hint">${t('compareHelp')}</p></header><div class="plan-grid">${cards}</div></section>`;
+    }
+
+    function renderEqualWasteOptions() {
+      const minimumWastePlan = currentPlanVariants.find(plan => plan.key === 'waste');
+      const alternatives = minimumWastePlan?.alternatives || [];
+      if (activePlanKey !== 'waste' || alternatives.length < 2) return '';
+      const buttons = alternatives.map((plan,index) => `<button class="equal-option ${index === activeWasteOption ? 'active' : ''}" type="button" data-waste-option="${index}">${t('option')} ${index + 1}<small>${plan.metrics.cuts} ${t('mainCuts')} · ${plan.metrics.pieces} ${t('piece')}</small></button>`).join('');
+      return `<section class="card equal-options"><div class="equal-options-head"><div><h2>${t('equalPlans',{n:alternatives.length})}</h2><p class="hint">${t('equalPlansHelp')}</p></div><span class="equal-count">${alternatives.length}</span></div><div class="equal-option-list">${buttons}</div></section>`;
+    }
+
+    function renderActivePlan() {
+      const category = currentPlanVariants.find(item => item.key === activePlanKey) || currentPlanVariants[0];
+      if (!category) return;
+      activePlanKey = category.key;
+      const alternatives = category.alternatives || [category];
+      if (activeWasteOption >= alternatives.length) activeWasteOption = 0;
+      const plan = category.key === 'waste' ? alternatives[activeWasteOption] : category;
+      plan.metrics = planMetrics(plan.pieces, plan.panels);
+      renderPlan(plan.pieces, plan.panels, plan);
+      enforceEnglishDigits(results);
+    }
+
+    function renderPlan(rooms, panels, plan) {
+      const metrics = planMetrics(rooms, panels);
+      const { totalLength, usedArea:roomArea, cutArea, wasteArea } = metrics;
+      const efficiency = cutArea ? roomArea / cutArea * 100 : 0;
+      const rolls = Math.ceil(totalLength / ROLL_LENGTH);
+      const rollRemaining = rolls * ROLL_LENGTH - totalLength;
+
+      results.innerHTML = `
+        ${renderPlanChoices()}
+        ${renderEqualWasteOptions()}
+        <article class="card summary">
+          <div class="summary-top">
+            <div><div class="eyebrow">${t('optimized')}</div><h2>${t('cutMain',{n:panels.length,s:panels.length===1?'':'s'})}</h2><p class="summary-line">${t('useRoll',{length:fmt(totalLength),rolls,s:rolls===1?'':'s'})}</p></div>
+            <div class="waste-pill">${t('used',{n:fmt(efficiency)})}</div>
+          </div>
+          <div class="stats">
+            <div class="stat"><b>${panels.length}</b><span>${t('mainCuts')}</span></div>
+            <div class="stat"><b>${fmt(totalLength)} ${unit()}</b><span>${t('rollNeeded')}</span></div>
+            <div class="stat"><b>${fmt(cutArea)} ${unit(true)}</b><span>${t('totalCutArea')}</span></div>
+            <div class="stat"><b>${fmt(roomArea)} ${unit(true)}</b><span>${t('usedArea')}</span></div>
+            <div class="stat"><b>${fmt(wasteArea)} ${unit(true)}</b><span>${t('cutWaste')}</span></div>
+            <div class="stat"><b>${fmt(rollRemaining)} ${unit()}</b><span>${t('uncutLeft')}</span></div>
+          </div>
+        </article>
+        <div class="manual-hint"><strong>${t('manualEdit')}:</strong> ${t('dragHelp')}</div>
+        <div class="cut-list">${panels.map((p,i) => renderPanel(p,i,plan.lockedIds,panels.length)).join('')}</div>
+        ${renderAssemblies(rooms)}
+        ${renderWastePieces(panels)}`;
+    }
+
+    function renderPanel(panel, index, lockedIds = new Set(), panelCount = 0) {
+      const scale = Math.min(320 / panel.width, 460 / panel.height);
+      const diagramWidth = panel.width * scale;
+      const waste = panel.free.filter(r => r.w*r.h > .005);
+      const piecesHtml = panel.placements.map(p => {
+        const left = p.x / panel.width * 100;
+        const top = p.y / panel.height * 100;
+        const width = p.w / panel.width * 100;
+        const height = p.h / panel.height * 100;
+        const locked = lockedIds.has(String(p.room.id));
+        return `<div class="piece ${locked ? 'locked' : ''}" draggable="${locked ? 'false' : 'true'}" data-piece-id="${escapeHtml(p.room.id)}" data-panel-index="${index}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;background:${p.room.color}"><div>${escapeHtml(p.room.name)}<small>${fmt(p.w)} × ${fmt(p.h)} ${unit()}</small><small>${fmt(p.w*p.h)} ${unit(true)}</small></div></div>`;
+      }).join('');
+      const wasteHtml = waste.map(r => `<div class="waste" style="left:${r.x/panel.width*100}%;top:${r.y/panel.height*100}%;width:${r.w/panel.width*100}%;height:${r.h/panel.height*100}%">${r.w*r.h > .18 ? `${fmt(r.w)} × ${fmt(r.h)}<br>${fmt(r.w*r.h)} ${unit(true)}` : ''}</div>`).join('');
+      const steps = panel.placements.map((p,j) => {
+        const pieceId = String(p.room.id);
+        const locked = lockedIds.has(pieceId);
+        const canRotate = p.room.direction === 'free' && p.room.allowRotation !== false;
+        const moveOptions = Array.from({length:panelCount}, (_, target) => target === index ? '' : `<option value="${target}">${t('mainCuts')} ${target + 1}</option>`).join('');
+        return `<div class="step"><i>${j+1}</i><div class="step-main">${t('cutRoom',{name:`<strong>${escapeHtml(p.room.name)}</strong>`,w:fmt(p.w),h:fmt(p.h),rotated:p.rotated?t('rotated'):''})} <strong>${fmt(p.w*p.h)} ${unit(true)}</strong><div class="piece-actions"><select class="piece-action edit-move" data-piece-id="${escapeHtml(pieceId)}" ${locked ? 'disabled' : ''}><option value="">${t('moveTo')}</option>${moveOptions}<option value="new">${t('newCut')}</option></select><button class="piece-action edit-rotate" type="button" data-piece-id="${escapeHtml(pieceId)}" ${!canRotate || locked ? 'disabled' : ''}>${t('rotate')}</button><button class="piece-action edit-lock" type="button" data-piece-id="${escapeHtml(pieceId)}">${locked ? t('unlock') : t('lock')}</button></div></div></div>`;
+      }).join('');
+      const leftovers = waste.length ? waste.map(r => `<span class="chip">${fmt(r.w)} × ${fmt(r.h)} ${unit()} (${fmt(r.w*r.h)} ${unit(true)})</span>`).join('') : `<span class="chip">${t('noWaste')}</span>`;
+      return `<article class="card cut-card">
+        <header class="cut-header"><div class="cut-title"><div class="cut-num">${index+1}</div><div><h3>${t('mainPiece',{w:fmt(panel.width),h:fmt(panel.height)})}</h3><span>${t('roomPieces',{n:panel.placements.length,s:panel.placements.length===1?'':'s'})}</span></div></div><div><small>${t('mainCutArea')}</small><strong>${fmt(panel.width*panel.height)} ${unit(true)}</strong></div></header>
+        <div class="cut-body">
+          <div class="diagram-wrap"><div class="diagram" data-panel-index="${index}" style="width:min(100%, ${diagramWidth}px);aspect-ratio:${panel.width}/${panel.height}" aria-label="${t('diagram',{n:index+1})}">${piecesHtml}${wasteHtml}</div></div>
+          <div class="steps"><h3>${t('divide')}</h3>${steps}<div class="leftovers"><strong>${t('extras')}</strong><div class="chips">${leftovers}</div></div></div>
+        </div>
+      </article>`;
+    }
+
+    function renderAssemblies(pieces) {
+      const groups = new Map();
+      pieces.filter(piece => piece.assembly).forEach(piece => {
+        if (!groups.has(piece.roomId)) groups.set(piece.roomId, []);
+        groups.get(piece.roomId).push(piece);
+      });
+      if (!groups.size) return '';
+      const roomGroups = [...groups.values()];
+      const maxRoomWidth = Math.max(...roomGroups.map(group => group[0].assembly.totalW));
+      const maxRoomHeight = Math.max(...roomGroups.map(group => group[0].assembly.totalH));
+      const sharedScale = Math.min(88, 480 / maxRoomWidth, 560 / maxRoomHeight);
+      const cards = roomGroups.map(group => {
+        const first = group[0];
+        const layout = first.assembly;
+        const canvasWidth = layout.totalW * sharedScale;
+        const parts = group.map((piece, index) => {
+          const a = piece.assembly;
+          const left = a.x / a.totalW * 100;
+          const top = a.y / a.totalH * 100;
+          const width = a.w / a.totalW * 100;
+          const height = a.h / a.totalH * 100;
+          const pieceColor = ASSEMBLY_COLORS[index % ASSEMBLY_COLORS.length];
+          return `<div class="assembly-piece" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;background:${pieceColor}"><div><span class="piece-index">${index + 1}</span><small>${fmt(a.w)} × ${fmt(a.h)} ${unit()}</small><small>${fmt(a.w*a.h)} ${unit(true)}</small></div></div>`;
+        }).join('');
+        const pieceChips = group.map((piece, index) => `<span class="room-piece-chip" style="--piece-color:${ASSEMBLY_COLORS[index % ASSEMBLY_COLORS.length]}"><span class="piece-index">${index + 1}.</span> ${fmt(piece.a)} × ${fmt(piece.b)} ${unit()} · ${fmt(piece.a*piece.b)} ${unit(true)}</span>`).join('');
+        return `<details class="assembly-card" open><summary><div><h3>${escapeHtml(first.parentName)}</h3><p>${t('measuredSize')}: ${fmt(first.targetA)} × ${fmt(first.targetB)} ${unit()} · ${group.length} ${t('piece')}</p><p>${t('cutSize')}: ${fmt(first.cutTargetA ?? layout.totalW)} × ${fmt(first.cutTargetB ?? layout.totalH)} ${unit()}</p></div><span class="toggle-icon" aria-hidden="true"></span></summary><div class="assembly-content"><strong>${t('piecesNeeded')}</strong><div class="room-piece-list">${pieceChips}</div><div class="assembly-canvas-wrap"><div class="assembly-canvas" style="width:min(100%, ${canvasWidth}px);aspect-ratio:${layout.totalW}/${layout.totalH}" aria-label="${escapeHtml(first.parentName)}">${parts}</div></div></div></details>`;
+      }).join('');
+      return `<section class="card assembly-section"><header><div class="eyebrow">${t('assembled')}</div><h2>${t('assembled')}</h2><p class="hint">${t('assembledHelp')}</p></header><div class="assembly-grid">${cards}</div></section>`;
+    }
+
+    function renderWastePieces(panels) {
+      const wastePieces = panels.flatMap((panel, panelIndex) => panel.free
+        .filter(rect => rect.w * rect.h > .005)
+        .map(rect => ({ ...rect, panelIndex })))
+        .sort((a, b) => b.w * b.h - a.w * a.h);
+      const total = wastePieces.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+      const cards = wastePieces.length ? wastePieces.map((piece, index) => {
+        const scale = Math.min(190 / piece.w, 145 / piece.h);
+        const visualWidth = Math.max(2, piece.w * scale);
+        const visualHeight = Math.max(2, piece.h * scale);
+        return `<article class="waste-piece-card">
+          <div class="waste-piece-graph"><div class="waste-piece-shape" style="width:${visualWidth}px;height:${visualHeight}px" role="img" aria-label="${t('wastePiece')} ${index + 1}: ${fmt(piece.w)} × ${fmt(piece.h)} ${unit()}"></div></div>
+          <div class="waste-piece-info"><div><h3>${t('wastePiece')} ${index + 1}</h3><p>${t('sourceCut',{n:piece.panelIndex + 1})}</p></div><strong>${fmt(piece.w)} × ${fmt(piece.h)} ${unit()}<br>${fmt(piece.w * piece.h)} ${unit(true)}</strong></div>
+        </article>`;
+      }).join('') : `<div class="empty">${t('noWaste')}</div>`;
+      return `<section class="card waste-section"><header><div><div class="eyebrow">${t('extras')}</div><h2>${t('wastePiecesTitle')}</h2><p class="hint">${t('wastePiecesHelp')}</p></div><div class="waste-total">${t('totalWaste')}: ${fmt(total)} ${unit(true)}</div></header><div class="waste-grid">${cards}</div></section>`;
+    }
+
+    function activePlan() {
+      const category = currentPlanVariants.find(plan => plan.key === activePlanKey);
+      if (!category) return null;
+      return category.key === 'waste' ? (category.alternatives?.[activeWasteOption] || category) : category;
+    }
+
+    function clonePanels(panels) {
+      return panels.map(panel => ({
+        ...panel,
+        placements: panel.placements.map(placement => ({ ...placement })),
+        free: panel.free.map(rect => ({ ...rect })),
+        usedIds: new Set(panel.usedIds ? [...panel.usedIds] : [])
+      }));
+    }
+
+    function locatePiece(plan, pieceId) {
+      for (let panelIndex = 0; panelIndex < plan.panels.length; panelIndex++) {
+        const placementIndex = plan.panels[panelIndex].placements.findIndex(placement => String(placement.room.id) === String(pieceId));
+        if (placementIndex >= 0) return { panelIndex, placementIndex, placement:plan.panels[panelIndex].placements[placementIndex] };
+      }
+      return null;
+    }
+
+    function showManualError(message) {
+      errorBox.textContent = message;
+      errorBox.classList.add('show');
+      errorBox.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    function refreshManualPlan(plan) {
+      plan.panels.forEach(panel => {
+        panel.packedArea = panel.placements.reduce((sum, placement) => sum + placement.w * placement.h, 0);
+        panel.utilization = panel.packedArea / (panel.width * panel.height);
+        panel.throughput = panel.packedArea / panel.height;
+      });
+      plan.manual = true;
+      plan.metrics = planMetrics(plan.pieces, plan.panels);
+      errorBox.classList.remove('show');
+      renderActivePlan();
+    }
+
+    function movePiece(pieceId, targetPanelIndex) {
+      const plan = activePlan();
+      if (!plan || plan.lockedIds.has(String(pieceId))) return;
+      const found = locatePiece(plan, pieceId);
+      if (!found || targetPanelIndex === found.panelIndex) return;
+      const backup = clonePanels(plan.panels);
+      const source = plan.panels[found.panelIndex];
+      const [placement] = source.placements.splice(found.placementIndex, 1);
+      source.free.push({ x:placement.x, y:placement.y, w:placement.w, h:placement.h });
+
+      if (targetPanelIndex === 'new') {
+        const choices = orientations(placement.room).sort((a,b) => a.h - b.h || b.w - a.w);
+        if (!choices.length) {
+          plan.panels = backup;
+          showManualError(t('moveFailed'));
+          return;
+        }
+        plan.panels.push(buildPanel(placement.room, choices[0], [], choices[0].h));
+      } else {
+        const target = plan.panels[Number(targetPanelIndex)];
+        const fit = target && bestFitInPanel(placement.room, target);
+        if (!fit) {
+          plan.panels = backup;
+          showManualError(t('moveFailed'));
+          return;
+        }
+        place(target, placement.room, fit);
+      }
+      if (!source.placements.length) plan.panels.splice(found.panelIndex, 1);
+      refreshManualPlan(plan);
+    }
+
+    function rotatePiece(pieceId) {
+      const plan = activePlan();
+      if (!plan || plan.lockedIds.has(String(pieceId))) return;
+      const found = locatePiece(plan, pieceId);
+      if (!found) return;
+      const room = found.placement.room;
+      if (room.direction !== 'free' || room.allowRotation === false) {
+        showManualError(t('rotationBlocked'));
+        return;
+      }
+      const backup = clonePanels(plan.panels);
+      const panel = plan.panels[found.panelIndex];
+      const [placement] = panel.placements.splice(found.placementIndex, 1);
+      panel.free.push({ x:placement.x, y:placement.y, w:placement.w, h:placement.h });
+      let best = null;
+      orientations(room).filter(option => option.rotated !== placement.rotated).forEach(option => {
+        panel.free.forEach((free, freeIndex) => {
+          if (option.w <= free.w + .0001 && option.h <= free.h + .0001) {
+            const score = free.w * free.h - option.w * option.h;
+            if (!best || score < best.score) best = { ...option, freeIndex, x:free.x, y:free.y, score };
+          }
+        });
+      });
+      if (!best) {
+        plan.panels = backup;
+        showManualError(t('moveFailed'));
+        return;
+      }
+      place(panel, room, best);
+      refreshManualPlan(plan);
+    }
+
+    function togglePieceLock(pieceId) {
+      const plan = activePlan();
+      if (!plan) return;
+      const key = String(pieceId);
+      if (plan.lockedIds.has(key)) plan.lockedIds.delete(key);
+      else plan.lockedIds.add(key);
+      renderActivePlan();
+    }
+
+    function calculate() {
+      enforceEnglishDigits();
+      errorBox.classList.remove('show');
+      const nextWidth = Number(document.querySelector('#roll-width').value);
+      const nextLength = Number(document.querySelector('#roll-length').value);
+      if (!Number.isFinite(nextWidth) || !Number.isFinite(nextLength) || nextWidth <= 0 || nextLength <= 0) {
+        errorBox.textContent = t('invalidRoll');
+        errorBox.classList.add('show');
+        return;
+      }
+      ROLL_WIDTH = nextWidth;
+      ROLL_LENGTH = nextLength;
+      updateRollBadge();
+      const rooms = readRooms();
+      if (!rooms.length) {
+        results.innerHTML = `<div class="card empty">${t('emptyPrompt')}</div>`;
+        return;
+      }
+      const invalid = rooms.find(r => !Number.isFinite(r.a) || !Number.isFinite(r.b) || r.a <= 0 || r.b <= 0);
+      if (invalid) {
+        errorBox.textContent = t('invalid',{name:invalid.name});
+        errorBox.classList.add('show');
+        return;
+      }
+      const invalidOptions = rooms.find(r => !Number.isFinite(r.patternRepeat) || !Number.isFinite(r.seamAllowance) || !Number.isFinite(r.edgeAllowance) || r.patternRepeat < 0 || r.seamAllowance < 0 || r.edgeAllowance < 0 || r.seamAllowance >= ROLL_WIDTH);
+      if (invalidOptions) {
+        errorBox.textContent = t('invalidOptions',{name:invalidOptions.name});
+        errorBox.classList.add('show');
+        return;
+      }
+      try {
+        currentPlanVariants = buildPlanVariants(rooms);
+        activePlanKey = chooseRecommendedPlan(currentPlanVariants).key;
+        activeWasteOption = 0;
+        renderActivePlan();
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.classList.add('show');
+      }
+    }
+
+    function applyLanguage(lang) {
+      const previous = currentLang;
+      currentLang = lang;
+      document.documentElement.lang = lang === 'ku' ? 'ckb' : 'en';
+      document.documentElement.dir = lang === 'ku' ? 'rtl' : 'ltr';
+      document.title = t('title');
+      document.querySelector('#brand-kicker').textContent = t('kicker');
+      document.querySelector('#brand-title').textContent = t('title');
+      updateRollBadge();
+      document.querySelector('#rooms-title').textContent = t('rooms');
+      document.querySelector('#rooms-hint').textContent = t('hint');
+      document.querySelector('#roll-width-label').textContent = t('rollWidth');
+      document.querySelector('#roll-length-label').textContent = t('rollLength');
+      document.querySelector('#add-room').textContent = t('add');
+      document.querySelector('#calculate').textContent = t('calculate');
+      document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = t(element.dataset.i18n); });
+      document.querySelector('#toggle-input').textContent = document.querySelector('.input-card').classList.contains('collapsed') ? t('showInput') : t('hideInput');
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+      const enNames = ['Kitchen','Living room','Entrance','Bedroom','Hallway'];
+      const kuNames = ['چێشتخانە','ژووری دانیشتن','دەروازە','ژووری نووستن','ڕێڕەو'];
+      list.querySelectorAll('.room-row').forEach(row => {
+        const input = row.querySelector('.name');
+        const from = previous === 'en' ? enNames : kuNames;
+        const to = lang === 'en' ? enNames : kuNames;
+        const sampleIndex = from.indexOf(input.value);
+        if (sampleIndex >= 0) input.value = to[sampleIndex];
+        input.setAttribute('aria-label', t('roomName'));
+        input.placeholder = t('roomName');
+        row.querySelector('.side-a').setAttribute('aria-label', t('sideA'));
+        row.querySelector('.side-a').placeholder = t('widthPlaceholder');
+        row.querySelector('.side-b').setAttribute('aria-label', t('sideB'));
+        row.querySelector('.side-b').placeholder = t('heightPlaceholder');
+        const method = row.querySelector('.room-method');
+        method.setAttribute('aria-label', t('roomMethod'));
+        method.querySelector('option[value="efficient"]').textContent = t('efficientTitle');
+        method.querySelector('option[value="large"]').textContent = t('largeTitle');
+        const remove = row.querySelector('.remove');
+        remove.setAttribute('aria-label', t('remove'));
+        remove.title = t('remove');
+      });
+      calculate();
+      enforceEnglishDigits();
+    }
+
+    function updateRollBadge() {
+      const width = englishDigits(document.querySelector('#roll-width').value || ROLL_WIDTH);
+      const length = englishDigits(document.querySelector('#roll-length').value || ROLL_LENGTH);
+      document.querySelector('#roll-badge').textContent = t('roll', {w:width, h:length});
+    }
+
+    document.querySelector('#add-room').addEventListener('click', () => addRoom());
+    document.querySelector('#calculate').addEventListener('click', calculate);
+    document.querySelector('#toggle-input').addEventListener('click', () => {
+      const card = document.querySelector('.input-card');
+      card.classList.toggle('collapsed');
+      document.querySelector('#toggle-input').textContent = card.classList.contains('collapsed') ? t('showInput') : t('hideInput');
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', () => applyLanguage(btn.dataset.lang)));
+    list.addEventListener('change', event => {
+      if (event.target.matches('.room-method,.direction,.allow-rotation,.pattern-repeat,.seam-allowance,.edge-allowance')) calculate();
+    });
+    document.querySelector('#roll-width').addEventListener('change', calculate);
+    document.querySelector('#roll-length').addEventListener('change', calculate);
+    document.addEventListener('input', event => {
+      if (event.target.matches('.numeric-input')) {
+        const normalized = englishDigits(event.target.value);
+        if (normalized !== event.target.value) event.target.value = normalized;
+      }
+    });
+    list.addEventListener('keydown', event => { if (event.key === 'Enter') calculate(); });
+    results.addEventListener('click', event => {
+      const equalOption = event.target.closest('.equal-option');
+      if (equalOption) {
+        activePlanKey = 'waste';
+        activeWasteOption = Number(equalOption.dataset.wasteOption);
+        renderActivePlan();
+        return;
+      }
+      const planChoice = event.target.closest('.plan-choice');
+      if (planChoice) {
+        activePlanKey = planChoice.dataset.planKey;
+        renderActivePlan();
+        return;
+      }
+      const rotate = event.target.closest('.edit-rotate');
+      if (rotate) {
+        rotatePiece(rotate.dataset.pieceId);
+        return;
+      }
+      const lock = event.target.closest('.edit-lock');
+      if (lock) togglePieceLock(lock.dataset.pieceId);
+    });
+    results.addEventListener('change', event => {
+      const move = event.target.closest('.edit-move');
+      if (move && move.value) movePiece(move.dataset.pieceId, move.value === 'new' ? 'new' : Number(move.value));
+    });
+    results.addEventListener('dragstart', event => {
+      const piece = event.target.closest('.piece[draggable="true"]');
+      if (!piece) return;
+      draggedPieceId = piece.dataset.pieceId;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggedPieceId);
+    });
+    results.addEventListener('dragover', event => {
+      const diagram = event.target.closest('.diagram');
+      if (!diagram || !draggedPieceId) return;
+      event.preventDefault();
+      diagram.classList.add('drag-target');
+      event.dataTransfer.dropEffect = 'move';
+    });
+    results.addEventListener('dragleave', event => {
+      const diagram = event.target.closest('.diagram');
+      if (diagram && !diagram.contains(event.relatedTarget)) diagram.classList.remove('drag-target');
+    });
+    results.addEventListener('drop', event => {
+      const diagram = event.target.closest('.diagram');
+      if (!diagram) return;
+      event.preventDefault();
+      diagram.classList.remove('drag-target');
+      const pieceId = draggedPieceId || event.dataTransfer.getData('text/plain');
+      draggedPieceId = null;
+      if (pieceId) movePiece(pieceId, Number(diagram.dataset.panelIndex));
+    });
+    results.addEventListener('dragend', () => {
+      draggedPieceId = null;
+      results.querySelectorAll('.drag-target').forEach(element => element.classList.remove('drag-target'));
+    });
+    initialRooms.forEach(addRoom);
+    applyLanguage('ku');
+
+    function registerWebMcp() {
+      const context = document.modelContext;
+      if (!context?.registerTool) return;
+      try {
+        context.registerTool({
+          name: 'set_rooms_and_calculate_cuts',
+          title: 'Plan carpet cuts',
+          description: 'Replace the room list and calculate an optimized cutting plan for a 4 metre-wide carpet roll.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              rooms: {
+                type: 'array', minItems: 1,
+                items: { type: 'object', properties: { name: {type:'string'}, sideA: {type:'number', exclusiveMinimum:0}, sideB: {type:'number', exclusiveMinimum:0}, method: {type:'string', enum:['efficient','large']} }, required:['name','sideA','sideB'], additionalProperties:false }
+              }
+            },
+            required: ['rooms'], additionalProperties: false
+          },
+          annotations: { readOnlyHint: false, untrustedContentHint: false },
+          execute(input) {
+            if (!input || !Array.isArray(input.rooms) || !input.rooms.length) throw new Error('At least one room is required.');
+            const next = input.rooms.map((r,i) => ({ name: String(r.name || `Room ${i+1}`), a: Number(r.sideA), b: Number(r.sideB), mode: r.method === 'large' ? 'large' : 'efficient' }));
+            if (next.some(r => !Number.isFinite(r.a) || !Number.isFinite(r.b) || r.a <= 0 || r.b <= 0)) throw new Error('Every room needs two positive sizes.');
+            list.innerHTML = '';
+            next.forEach(addRoom);
+            calculate();
+            const plan = activePlan();
+            return { mainCuts: plan?.panels.length || 0, rollLengthMetres: Number((plan?.panels.reduce((s,p)=>s+p.height,0) || 0).toFixed(2)) };
+          }
+        });
+      } catch (_) {}
+    }
+    registerWebMcp();
+  </script>
+</body>
+</html>
